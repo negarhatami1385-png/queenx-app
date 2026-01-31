@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>QueenX — Mobile (Theme & Animations)</title>
+
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script src="https://kit.fontawesome.com/a2e0b5a3c7.js" crossorigin="anonymous"></script>
+
+<style>
+/* ========== THEME VARIABLES ========== */
+/* default = dark */
+:root {
+  --bg: #06060a;
+  --card: linear-gradient(180deg,#0f1220,#0b0d16);
+  --muted: #9aa0a6;
+  --text: #f6f6f8;
+  --accent: #ff7eb3;
+  --accent2: #ff4d94;
+  --success: #00b894;
+  --danger: #ff6b6b;
+  --glass: rgba(255,255,255,0.04);
+  --radius: 16px;
+  --shadow: 0 12px 30px rgba(0,0,0,0.6);
+  --card-elev: rgba(255,255,255,0.02);
+  --nav-bg: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.55));
+}
+
+/* light theme overrides */
+:root[data-theme="light"]{
+  --bg: linear-gradient(180deg,#f6f7fb,#eef2ff);
+  --card: linear-gradient(180deg,#ffffff,#fbfbff);
+  --muted: #566170;
+  --text: #0b1220;
+  --accent: #ff5ea8;
+  --accent2: #ff3b7a;
+  --glass: rgba(11,18,32,0.03);
+  --shadow: 0 8px 20px rgba(16,24,40,0.08);
+  --card-elev: rgba(14,18,34,0.02);
+  --nav-bg: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.95));
+}
+
+/* ========== Base ========== */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Vazirmatn',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+body{display:flex;flex-direction:column}
+
+/* ========== App shell (mobile-first) ========== */
+.app-shell{width:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;height:100vh;position:relative}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:transparent}
+.header .left{display:flex;gap:12px;align-items:center}
+.avatar{width:48px;height:48px;border-radius:50%;border:2px solid var(--accent);object-fit:cover;box-shadow:0 6px 18px rgba(0,0,0,0.3)}
+.title{font-weight:800;font-size:1.05rem}
+.subtitle{font-size:0.85rem;color:var(--muted)}
+
+/* content scroll area */
+.main{flex:1;overflow-y:auto;padding:12px 14px;padding-bottom:120px;-webkit-overflow-scrolling:touch}
+
+/* card with entrance animation */
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:12px;margin-bottom:12px;border:1px solid var(--card-elev);
+  box-shadow:var(--shadow);
+  transform:translateY(8px);opacity:0;animation:cardIn .45s cubic-bezier(.2,.9,.3,1) forwards;
+  transition:transform .25s ease, box-shadow .25s ease;
+}
+@keyframes cardIn { to{ transform:translateY(0); opacity:1 } }
+
+/* hover / active elevation */
+.card:active{ transform:translateY(2px); box-shadow:0 6px 18px rgba(0,0,0,0.4) }
+
+/* small helpers */
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.small-muted{font-size:0.85rem;color:var(--muted)}
+.center{display:flex;align-items:center;justify-content:center}
+.hidden{display:none}
+
+/* ========== Dashboard ========== */
+.dash-stats{display:flex;gap:10px;justify-content:space-between}
+.stat{flex:1;background:transparent;padding:10px;border-radius:10px;text-align:center;backdrop-filter:blur(6px)}
+.stat strong{display:block;font-size:1.2rem}
+
+/* progress bar */
+.progress-wrap{height:10px;background:linear-gradient(90deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02));border-radius:999px;overflow:hidden;margin-top:8px}
+.progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .9s cubic-bezier(.2,.9,.3,1)}
+
+/* motivation */
+.motiv-msg{font-weight:800;font-size:1rem;margin-bottom:6px;opacity:0;transform:translateY(6px);animation:motivIn .6s ease forwards}
+@keyframes motivIn{ to{opacity:1;transform:none} }
+
+/* rotating subtle background pulse */
+.motiv-card{position:relative;overflow:hidden}
+.motiv-card::after{
+  content:"";position:absolute;right:-40%;top:-40%;width:180%;height:180%;background:radial-gradient(circle at 10% 20%, rgba(255,126,179,0.06), transparent 10%), radial-gradient(circle at 80% 80%, rgba(123,97,255,0.05), transparent 12%);
+  transform:rotate(0deg);filter:blur(16px);pointer-events:none;animation:slowSpin 18s linear infinite;
+}
+@keyframes slowSpin{ from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+/* motiv pulse on update */
+.motiv-pulse{animation:pop 0.45s cubic-bezier(.2,.9,.3,1)}
+@keyframes pop{0%{transform:scale(.98);opacity:.8}50%{transform:scale(1.02);opacity:1}100%{transform:none}}
+
+/* ========== Water ========== */
+.water-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.water-grid{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.water-cup{font-size:1.5rem;padding:8px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .22s ease, color .2s ease, opacity .2s ease}
+.water-cup.full{color:#36a2ff;transform:scale(1.06);box-shadow:0 8px 20px rgba(54,162,255,0.12)}
+.water-cup:active{transform:scale(.98)}
+/* subtle periodic pulse for goal reached */
+.water-goal-achieved{animation:waterGoal 1.4s ease 1}
+@keyframes waterGoal{0%{transform:scale(1);box-shadow:0 8px 20px rgba(54,162,255,0)}50%{transform:scale(1.06);box-shadow:0 18px 40px rgba(54,162,255,0.14)}100%{transform:none;box-shadow:0 8px 20px rgba(54,162,255,0.12)}}
+
+/* ========== Todos ========== */
+.todo-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+.todo-title{flex:1}
+.tag{background:rgba(255,255,255,0.03);padding:6px;border-radius:8px;font-size:0.8rem;color:var(--muted)}
+
+/* ========== FAB & bottom nav ========== */
+.bottom-nav{
+  position:fixed;left:0;right:0;bottom:0;height:78px;
+  background:var(--nav-bg);backdrop-filter:blur(8px);
+  display:flex;justify-content:space-around;align-items:center;padding:12px 14px;border-top:1px solid var(--glass);z-index:40;max-width:480px;margin:0 auto;border-radius:12px 12px 0 0;
+  transition:transform .25s ease, background .25s ease;
+}
+.nav-btn{display:flex;flex-direction:column;align-items:center;color:var(--muted);font-size:12px;text-decoration:none;transition:transform .25s ease,color .25s ease}
+.nav-btn.active{color:var(--accent);transform:translateY(-6px)}
+.fab{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#111;font-weight:900;box-shadow:0 12px 32px rgba(0,0,0,0.35);transform:translateY(-28px);transition:transform .18s cubic-bezier(.2,.9,.3,1)}
+.fab:active{transform:translateY(-24px) scale(.98)}
+
+/* ripple for button press (mobile) */
+.btn-press{position:relative;overflow:hidden}
+.btn-press::after{content:"";position:absolute;left:50%;top:50%;width:0;height:0;background:rgba(255,255,255,0.06);border-radius:50%;transform:translate(-50%,-50%);transition:width .3s ease,height .3s ease,opacity .3s ease}
+.btn-press:active::after{width:220px;height:220px;opacity:0}
+
+/* ========== Small transitions ========== */
+.input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text);transition:box-shadow .18s ease, border-color .18s ease}
+.input:focus{outline:none;box-shadow:0 6px 24px rgba(0,0,0,0.18);border-color:var(--accent)}
+.select{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text);min-width:90px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#111;padding:10px;border-radius:10px;border:none;font-weight:800}
+.nav-btn, .btn-ghost{background:transparent;border:none;color:var(--muted)}
+
+@media(min-width:520px){
+  .app-shell{border-radius:12px;overflow:hidden}
+  .main{padding:18px}
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell" id="appShell">
+  <header class="header">
+    <div class="left">
+      <img id="profileAvatar" class="avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Queen" alt="avatar">
+      <div>
+        <div class="title" id="profileName">ملکه من</div>
+        <div class="subtitle" id="profileRank">Novice Dreamer</div>
+      </div>
+    </div>
+    <div>
+      <button id="openSettingsBtn" class="nav-btn" style="font-size:18px" onclick="openSettings()">⚙️</button>
+    </div>
+  </header>
+
+  <main class="main" id="mainContent">
+
+    <section id="view-dashboard">
+      <div class="card">
+        <div class="section-title"><strong>عملکرد کلی</strong><span class="small-muted" id="overviewDate"></span></div>
+        <div class="dash-stats">
+          <div class="stat"><div class="small-muted">سطح</div><strong id="dashLevel">1</strong></div>
+          <div class="stat"><div class="small-muted">XP</div><strong id="dashXP">0 / 100</strong></div>
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="small-muted">پیشرفت کل</div>
+          <div class="progress-wrap"><div id="dashProgress" class="progress-bar"></div></div>
+        </div>
+
+        <div style="margin-top:12px">
+          <canvas id="dashChart" height="80"></canvas>
+        </div>
+      </div>
+
+      <div class="card motiv-card" id="motivCard">
+        <div class="section-title"><strong>پیام انگیزشی</strong><button class="nav-btn" onclick="manageMotivations()">ویرایش</button></div>
+        <div class="motiv-msg" id="motivText">تو امروز آماده‌ای برای درخشش ✨</div>
+        <div class="small-muted" style="margin-top:8px">پیام‌ها هر چند ثانیه تغییر می‌کنند. می‌تونی پیام خودت رو اضافه کنی.</div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><strong>آب</strong><span class="small-muted">هدف روزانه: <span id="waterGoal">8</span></span></div>
+        <div class="water-row">
+          <div class="water-grid" id="miniWater"></div>
+          <div style="min-width:110px;text-align:center">
+            <div class="small-muted">امروز</div>
+            <div style="font-weight:800" id="miniWaterCount">0 / 8</div>
+            <div style="margin-top:8px;display:flex;gap:6px;justify-content:center">
+              <button class="btn-primary btn-press" style="padding:8px 10px;border-radius:10px" onclick="Water.add()">＋</button>
+              <button class="nav-btn" onclick="Water.remove()">−</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-todos" class="hidden">
+      <div class="card">
+        <div class="section-title"><strong>تسک‌ها (Notion-like)</strong><div class="small-muted" id="todosCount">0 مورد</div></div>
+
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="todoTitle" class="input" placeholder="عنوان کار..." />
+          <button class="btn-primary" onclick="Todos.addFromUI()">افزودن</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;margin-bottom:10px">
+          <select id="todoRole" class="select">
+            <option value="عمومی">عمومی</option><option value="کاری">کاری</option><option value="شخصی">شخصی</option><option value="سلامت">سلامت</option>
+          </select>
+          <input id="todoDate" type="date" class="select" />
+          <input id="todoTime" type="time" class="select" />
+          <select id="todoRepeat" class="select"><option value="once">یک‌بار</option><option value="daily">روزانه</option><option value="weekly">هفتگی</option><option value="monthly">ماهانه</option></select>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <button class="nav-btn" onclick="Todos.filter='all'; Todos.render();">همه</button>
+          <button class="nav-btn" onclick="Todos.filter='due'; Todos.render();">امروز</button>
+          <button class="nav-btn" onclick="Todos.filter='incomplete'; Todos.render();">ناتمام</button>
+        </div>
+
+        <div class="todo-list" id="todoList"></div>
+      </div>
+    </section>
+
+    <section id="view-journal" class="hidden">
+      <div class="card">
+        <div class="section-title"><strong>دفترچه</strong><span class="small-muted">ثبت احساس و روزنگار</span></div>
+
+        <input id="journalTitle" class="input" placeholder="عنوان..." />
+        <textarea id="journalText" class="input" placeholder="متن خاطره..." style="margin-top:8px"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <select id="journalMood" class="select" style="flex:0 0 100px"><option>😍</option><option>😊</option><option>😌</option><option>🤔</option><option>😔</option><option>😤</option></select>
+          <input id="journalTrigger" class="input" placeholder="چه چیزی باعث شد؟ (اختیاری)" />
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn-primary" style="flex:1" onclick="Journal.addFromUI()">ثبت</button>
+          <button class="nav-btn" onclick="Journal.export()">اکسپورت</button>
+        </div>
+
+        <div style="margin-top:10px" class="small-muted">خاطرات اخیر</div>
+        <div class="journal-list" id="journalList"></div>
+      </div>
+    </section>
+
+    <section id="view-wallet" class="hidden">
+      <div class="card">
+        <div class="section-title"><strong>کیف پول</strong><span class="small-muted">کنترل تراکنش</span></div>
+
+        <div style="display:flex;gap:8px">
+          <input id="txAmount" class="input" placeholder="مبلغ" type="number" />
+          <input id="txDesc" class="input" placeholder="توضیح" />
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn-primary" style="flex:1" onclick="Wallet.addFromUI('income')">درآمد</button>
+          <button class="nav-btn" onclick="Wallet.addFromUI('expense')">هزینه</button>
+        </div>
+
+        <div style="margin-top:10px" class="small-muted">موجودی</div>
+        <div style="font-weight:800;font-size:1.4rem" id="walletBalance">0</div>
+
+        <div style="margin-top:10px" class="small-muted">تراکنش‌های اخیر</div>
+        <div class="tx-list" id="txList"></div>
+      </div>
+    </section>
+
+    <section id="view-analytics" class="hidden">
+      <div class="card">
+        <div class="section-title"><strong>آنالیز</strong><span class="small-muted">XP و آب هفته</span></div>
+        <canvas id="xpChart" height="120"></canvas>
+        <div style="height:8px"></div>
+        <canvas id="waterChart" height="120"></canvas>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav" role="navigation" aria-label="اصلی">
+    <div class="nav-btn active" id="nav-dashboard" onclick="switchView('dashboard', this)"><i class="fas fa-home" style="font-size:18px"></i><span>خانه</span></div>
+    <div class="nav-btn" id="nav-todos" onclick="switchView('todos', this)"><i class="fas fa-list-check" style="font-size:18px"></i><span>تسک‌ها</span></div>
+    <div class="fab" onclick="switchView('water')"><i class="fas fa-tint"></i></div>
+    <div class="nav-btn" id="nav-journal" onclick="switchView('journal', this)"><i class="fas fa-book" style="font-size:18px"></i><span>دفتر</span></div>
+    <div class="nav-btn" id="nav-wallet" onclick="switchView('wallet', this)"><i class="fas fa-wallet" style="font-size:18px"></i><span>کیف پول</span></div>
+  </nav>
+</div>
+
+<div id="toast" style="position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:rgba(0,0,0,0.65);color:white;padding:10px 14px;border-radius:10px;display:none;z-index:60"></div>
+
+<script>
+/* ---------------------------
+   State & storage (same key)
+   --------------------------- */
+const KEY = 'queenx_mobile_v1';
+const defaultState = {
+  profile:{name:'ملکه من', avatar:'https://api.dicebear.com/7.x/avataaars/svg?seed=Queen'},
+  xp:{level:1,xp:0},
+  motivations:["تو امروز آماده‌ای برای درخشش ✨","قدم‌های کوچک، مسیرهای بزرگ می‌سازند.","نفس عمیق و شروع دوباره."],
+  todos:[],
+  water:{goal:8,history:{}},
+  journal:[],
+  wallet:{balance:0,transactions:[],debts:[],goals:[]},
+  stats:{xpWeek:[0,0,0,0,0,0,0],waterWeek:[0,0,0,0,0,0,0]},
+  settings:{notify:true,theme: (window.matchMedia && window.matchMedia('(prefers-color-scheme:light)').matches) ? 'light' : 'dark' }
+};
+let state = JSON.parse(localStorage.getItem(KEY) || 'null') || defaultState;
+
+/* ------------- Helpers ------------- */
+function save(){ localStorage.setItem(KEY, JSON.stringify(state)); renderAll(); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function todayStr(){ return new Date().toLocaleDateString('fa-IR'); }
+function showToast(txt, t=2600){ const el=document.getElementById('toast'); el.innerText=txt; el.style.display='block'; clearTimeout(el._h); el._h=setTimeout(()=>el.style.display='none',t); }
+
+// بخش امنیتی غیرفعال شد تا پیام آزاردهنده حذف شود
+function requestNotif(){ 
+  // غیرفعال سازی درخواست دسترسی مرورگر
+  console.log("Browser notification request skipped for UX improvement.");
+}
+
+function notify(title, body){ 
+  // فقط از سیستم پیام داخلی خودت استفاده می‌کنه
+  showToast(body); 
+}
+
+function confettiSafe(){ try{ confetti(); }catch(e){} }
+
+/* ========== THEME ========== */
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme || state.settings.theme);
+  state.settings.theme = theme || state.settings.theme;
+  localStorage.setItem(KEY, JSON.stringify(state));
+  // small visual feedback
+  document.getElementById('profileAvatar').style.borderColor = state.settings.theme === 'light' ? 'var(--accent2)' : 'var(--accent)';
+}
+applyTheme(state.settings.theme);
+
+/* ========== Motivations ========== */
+let motivIndex = 0;
+function rotateMotiv(){ if(!state.motivations.length) return; motivIndex=(motivIndex+1)%state.motivations.length; const el=document.getElementById('motivText'); el.classList.remove('motiv-pulse'); void el.offsetWidth; el.innerText = state.motivations[motivIndex]; el.classList.add('motiv-pulse'); }
+function manageMotivations(){
+  Swal.fire({
+    title:'پیام‌های انگیزشی',
+    html:`<textarea id="motArea" class="swal2-textarea" style="direction:rtl">${state.motivations.join('\\n')}</textarea>
+          <div style="display:flex;gap:8px;margin-top:6px"><button id="saveBtn" class="swal2-confirm swal2-styled">ذخیره</button></div>`,
+    didOpen: ()=>{
+      document.getElementById('saveBtn').onclick = ()=>{
+        const v = document.getElementById('motArea').value;
+        state.motivations = v.split('\\n').map(s=>s.trim()).filter(Boolean);
+        save();
+        Swal.close();
+        showToast('پیام‌ها ذخیره شد');
+      };
+    }
+  });
+}
+
+/* ========== DASHBOARD ========== */
+let dashChart = null;
+function renderDashboard(){
+  document.getElementById('dashLevel').innerText = state.xp.level;
+  document.getElementById('dashXP').innerText = `${state.xp.xp} / ${state.xp.level*100}`;
+  document.getElementById('overviewDate').innerText = todayStr();
+  // progress width
+  const pct = Math.min(100, Math.round((state.xp.xp / (state.xp.level*100)) * 100));
+  const prog = document.getElementById('dashProgress'); if(prog) prog.style.width = pct + '%';
+  // chart
+  try{
+    const ctx = document.getElementById('dashChart').getContext('2d');
+    if(dashChart) dashChart.destroy();
+    dashChart = new Chart(ctx, { type:'bar', data:{ labels:['ش','ی','د','س','چ','پ','ج'], datasets:[{ data: state.stats.xpWeek, backgroundColor: state.settings.theme==='light' ? '#ff9fcf' : '#ff7eb3' }] }, options:{ plugins:{ legend:{display:false} }, scales:{ y:{display:false}, x:{grid:{display:false}} } } });
+  }catch(e){ console.warn('dash chart err', e) }
+}
+
+/* ========== TODOS ========== */
+const Todos = {
+  filter:'all',
+  addFromUI(){
+    const title = document.getElementById('todoTitle').value.trim();
+    if(!title) return showToast('عنوان را وارد کن');
+    const role = document.getElementById('todoRole').value;
+    const date = document.getElementById('todoDate').value || new Date().toISOString().slice(0,10);
+    const time = document.getElementById('todoTime').value || '';
+    const repeat = document.getElementById('todoRepeat').value || 'once';
+    this.add({title,role,date,time,repeat});
+    document.getElementById('todoTitle').value='';
+  },
+  add({title,role,date,time,repeat}){
+    const it = { id:uid(), title, role, date, time, repeat, done:false };
+    state.todos.push(it); save(); notify('تسک افزوده شد', title);
+  },
+  toggle(id){
+    const it = state.todos.find(x=>x.id===id); if(!it) return;
+    it.done = !it.done;
+    if(it.done){
+      addXP(20);
+      notify('آفرین', `تسک "${it.title}" انجام شد`);
+      // recurrence
+      if(it.repeat && it.repeat!=='once'){
+        const cur = new Date(it.date);
+        let nx = new Date(cur);
+        if(it.repeat==='daily') nx.setDate(cur.getDate()+1);
+        if(it.repeat==='weekly') nx.setDate(cur.getDate()+7);
+        if(it.repeat==='monthly') nx.setMonth(cur.getMonth()+1);
+        it.date = nx.toISOString().slice(0,10);
+        it.done = false;
+      }
+    }
+    save();
+  },
+  delete(id){ state.todos = state.todos.filter(t=>t.id!==id); save(); },
+  render(){
+    const list = document.getElementById('todoList'); list.innerHTML='';
+    let items = [...state.todos];
+    if(this.filter==='due'){ const td = new Date().toISOString().slice(0,10); items = items.filter(i=>i.date===td); }
+    else if(this.filter==='incomplete') items = items.filter(i=>!i.done);
+    items.sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+    items.forEach(it=>{
+      const el = document.createElement('div'); el.className='todo-item';
+      el.innerHTML = `<input type="checkbox" ${it.done?'checked':''} onchange="Todos.toggle('${it.id}')">
+        <div class="todo-title"><div style="font-weight:700">${it.title}</div><div class="small-muted">${it.date} ${it.time} • ${it.role}</div></div>
+        <div style="display:flex;gap:6px;align-items:center"><div class="tag">${it.repeat}</div><button class="nav-btn" onclick="Todos.delete('${it.id}')"><i class="fas fa-trash"></i></button></div>`;
+      list.appendChild(el);
+    });
+    document.getElementById('todosCount').innerText = `${state.todos.length} مورد`;
+  }
+};
+
+/* ========== WATER ========== */
+function addToWeek(key,date,add){
+  const idx = (date.getDay()+6)%7;
+  state.stats[key] = state.stats[key] || [0,0,0,0,0,0,0];
+  state.stats[key][idx] = (state.stats[key][idx]||0) + add;
+}
+const Water = {
+  add(){
+    const d = todayStr();
+    state.water.history[d] = (state.water.history[d] || 0) + 1;
+    addToWeek('waterWeek', new Date(), 1);
+    const cur = state.water.history[d];
+    if(cur >= state.water.goal){ addXP(50); notify('هیدراتاسیون کامل','تبریک! هدف امروز تکمیل شد'); confettiSafe(); const gw = document.getElementById('miniWater'); if(gw) gw.classList.add('water-goal-achieved'); setTimeout(()=>gw && gw.classList.remove('water-goal-achieved'),1400); }
+    else notify('آب','یک لیوان اضافه شد');
+    save();
+  },
+  remove(){
+    const d = todayStr();
+    state.water.history[d] = Math.max(0,(state.water.history[d]||0)-1);
+    save(); showToast('یک لیوان حذف شد');
+  },
+  renderMini(){
+    const container = document.getElementById('miniWater'); container.innerHTML='';
+    const cur = state.water.history[todayStr()]||0;
+    for(let i=0;i<state.water.goal;i++){
+      const el = document.createElement('div'); el.className='water-cup' + (i<cur ? ' full':''); el.innerHTML = '<i class="fas fa-tint"></i>';
+      el.onclick = ()=> { if(i>=cur) Water.add(); else Water.remove(); };
+      container.appendChild(el);
+    }
+    document.getElementById('miniWaterCount').innerText = `${cur} / ${state.water.goal}`;
+    document.getElementById('waterGoal').innerText = state.water.goal;
+  }
+};
+
+/* ========== JOURNAL ========== */
+const Journal = {
+  addFromUI(){
+    const title = document.getElementById('journalTitle').value.trim();
+    const text = document.getElementById('journalText').value.trim();
+    const mood = document.getElementById('journalMood') ? document.getElementById('journalMood').value : '';
+    const trigger = document.getElementById('journalTrigger').value.trim();
+    if(!text) return showToast('متن را بنویس');
+    const now = new Date();
+    state.journal.unshift({id:uid(),title,text,mood,trigger,date:now.toLocaleDateString('fa-IR'),time:now.toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit'})});
+    addXP(30); notify('دفترچه','خاطره ذخیره شد');
+    document.getElementById('journalTitle').value=''; document.getElementById('journalText').value=''; document.getElementById('journalTrigger').value='';
+    save();
+  },
+  render(){
+    const list = document.getElementById('journalList'); list.innerHTML='';
+    state.journal.slice(0,50).forEach(j=>{
+      const el = document.createElement('div'); el.className='journal-entry';
+      el.innerHTML = `<div style="font-weight:700">${j.title||'(بدون عنوان)'}</div><div class="small-muted">${j.date} • ${j.time} • ${j.mood}</div><p style="margin-top:8px">${j.text}</p>`;
+      list.appendChild(el);
+    });
+  },
+  export(){ const data="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(state.journal)); const a=document.createElement('a'); a.href=data; a.download=`journal_${Date.now()}.json`; a.click(); }
+};
+
+/* ========== WALLET ========== */
+const Wallet = {
+  addFromUI(type){
+    const amt = parseInt(document.getElementById('txAmount').value||0);
+    const desc = document.getElementById('txDesc').value|| (type==='income'?'درآمد':'هزینه');
+    if(!amt) return showToast('مبلغ را وارد کن');
+    this.execute(type==='income'?amt:-amt, desc);
+    document.getElementById('txAmount').value=''; document.getElementById('txDesc').value='';
+  },
+  execute(val,desc){
+    state.wallet.balance = (state.wallet.balance||0) + val;
+    state.wallet.transactions.unshift({id:uid(),val,desc,date:new Date().toLocaleDateString('fa-IR')});
+    addXP(10); notify('تراکنش', `${desc}: ${val>0?'+':''}${val}`); save();
+  },
+  render(){
+    document.getElementById('walletBalance').innerText = (state.wallet.balance||0).toLocaleString();
+    const txList = document.getElementById('txList'); txList.innerHTML='';
+    state.wallet.transactions.slice(0,40).forEach(t=>{
+      const el = document.createElement('div'); el.className='tx-row';
+      el.innerHTML = `<div><div style="font-weight:700">${t.desc}</div><div class="small-muted">${t.date}</div></div><div style="font-weight:800;color:${t.val>0? '#00b894':'#ff6b6b'}">${t.val>0?'+':''}${t.val.toLocaleString()}</div>`;
+      txList.appendChild(el);
+    });
+  }
+};
+
+/* ========== XP ========== */
+function addXP(n){
+  state.xp.xp += n;
+  const need = state.xp.level * 100;
+  if(state.xp.xp >= need){
+    state.xp.level++; state.xp.xp -= need;
+    Swal.fire({title:'LEVEL UP! 🆙', text:`تبریک! لول ${state.xp.level} شدی!`, icon:'success'});
+    confettiSafe();
+  }
+  addToWeek('xpWeek', new Date(), n);
+}
+
+/* ========== Analytics charts ========== */
+let xpChart=null, waterChart=null;
+function renderAnalytics(){
+  try{
+    const xpCtx = document.getElementById('xpChart').getContext('2d');
+    if(xpChart) xpChart.destroy();
+    xpChart = new Chart(xpCtx,{type:'line',data:{labels:['ش','ی','د','س','چ','پ','ج'],datasets:[{data:state.stats.xpWeek,borderColor:state.settings.theme==='light' ? '#ff6fa8' : '#ff7eb3',backgroundColor:'rgba(255,126,179,0.12)',fill:true}]},options:{plugins:{legend:{display:false}},scales:{y:{display:false},x:{display:false}}}});
+    const wCtx = document.getElementById('waterChart').getContext('2d');
+    if(waterChart) waterChart.destroy();
+    waterChart = new Chart(wCtx,{type:'bar',data:{labels:['ش','ی','د','س','چ','پ','ج'],datasets:[{data:state.stats.waterWeek,backgroundColor:'#36a2ff'}]},options:{plugins:{legend:{display:false}},scales:{y:{display:false},x:{display:false}}}});
+  }catch(e){ console.warn('chart err', e) }
+}
+
+/* ========== End-of-day summary ========== */
+function runEndOfDay(){
+  const completed = state.todos.filter(t=>t.done).length;
+  const water = state.water.history[todayStr()]||0;
+  const journalCount = state.journal.filter(j=>j.date===todayStr()).length;
+  const xpGained = state.stats.xpWeek.reduce((a,b)=>a+b,0);
+  const msg = `خلاصه امروز:\n- کارهای انجام شده: ${completed}\n- آب
+  مصرفی: ${water} لیوان
+- یادداشت ثبت شده: ${journalCount}
+- امتیاز کسب شده (هفته): ${xpGained}`;
+  
+  Swal.fire({
+    title: 'خلاصه عملکرد امروز شما ✨',
+    text: msg,
+    icon: 'info',
+    confirmButtonText: 'عالیه!'
+  });
+}
+
+/* ========== NAVIGATION SYSTEM ========== */
+function switchView(viewId, btn) {
+  // اگر روی آیکون آب (FAB) کلیک شد، برو به داشبورد و اسکرول کن روی بخش آب
+  if (viewId === 'water') {
+    switchView('dashboard', document.getElementById('nav-dashboard'));
+    setTimeout(() => {
+      document.getElementById('miniWater').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+    return;
+  }
+
+  // مخفی کردن تمام بخش‌ها
+  const sections = ['dashboard', 'todos', 'journal', 'wallet', 'analytics'];
+  sections.forEach(s => {
+    const el = document.getElementById('view-' + s);
+    if (el) el.classList.add('hidden');
+  });
+
+  // نمایش بخش انتخاب شده
+  const target = document.getElementById('view-' + viewId);
+  if (target) target.classList.remove('hidden');
+
+  // آپدیت وضعیت دکمه‌های ناوبری
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // رندر کردن اطلاعات مخصوص هر بخش
+  if (viewId === 'dashboard') renderDashboard();
+  if (viewId === 'todos') Todos.render();
+  if (viewId === 'journal') Journal.render();
+  if (viewId === 'wallet') Wallet.render();
+  if (viewId === 'analytics') renderAnalytics();
+}
+
+/* ========== SETTINGS ========== */
+function openSettings() {
+  Swal.fire({
+    title: 'تنظیمات پروفایل',
+    html: `
+      <div style="direction:rtl; text-align:right">
+        <label class="small-muted">نام شما:</label>
+        <input id="set-name" class="swal2-input" value="${state.profile.name}" placeholder="نام شما">
+        <label class="small-muted">هدف روزانه آب (لیوان):</label>
+        <input id="set-water" type="number" class="swal2-input" value="${state.water.goal}">
+        <label class="small-muted">تم برنامه:</label>
+        <select id="set-theme" class="swal2-select" style="width:100%">
+          <option value="dark" ${state.settings.theme === 'dark' ? 'selected' : ''}>تاریک (Deep Space)</option>
+          <option value="light" ${state.settings.theme === 'light' ? 'selected' : ''}>روشن (Soft Light)</option>
+        </select>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'ذخیره تغییرات',
+    cancelButtonText: 'لغو',
+    preConfirm: () => {
+      return {
+        name: document.getElementById('set-name').value,
+        water: parseInt(document.getElementById('set-water').value),
+        theme: document.getElementById('set-theme').value
+      }
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      state.profile.name = result.value.name;
+      state.water.goal = result.value.water || 8;
+      applyTheme(result.value.theme);
+      save();
+      showToast('تنظیمات با موفقیت به‌روز شد');
+    }
+  });
+}
+
+/* ========== CORE RENDER ========== */
+function renderAll() {
+  // آپدیت هدر
+  document.getElementById('profileName').innerText = state.profile.name;
+  document.getElementById('profileAvatar').src = state.profile.avatar;
+  
+  // رندر بخش‌های مختلف
+  renderDashboard();
+  Water.renderMini();
+  Todos.render();
+  Journal.render();
+  Wallet.render();
+  
+  // اگر در نمای آنالیز هستیم
+  if (!document.getElementById('view-analytics').classList.contains('hidden')) {
+    renderAnalytics();
+  }
+}
+
+/* ========== INITIALIZATION ========== */
+// چرخش پیام‌های انگیزشی هر 10 ثانیه
+setInterval(rotateMotiv, 10000);
+
+// اجرای اولیه هنگام لود شدن صفحه
+window.onload = () => {
+  renderAll();
+  
+  // افکت ورودی برای نام
+  const nameEl = document.getElementById('profileName');
+  nameEl.style.opacity = '0';
+  setTimeout(() => {
+    nameEl.style.transition = 'opacity 1s ease';
+    nameEl.style.opacity = '1';
+  }, 500);
+
+  console.log("QueenX Mobile Core Ready.");
+};
+</script>
+</body>
+</html>
